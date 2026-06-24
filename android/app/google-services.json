@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "829916534757",
+    "project_id": "stepz-attendance-prod",
+    "storage_bucket": "stepz-attendance-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829916534757:android:4c1417af193c5a648a010c",
+        "android_client_info": {
+          "package_name": "com.example.stepz_attendance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWflXmui8jSfFZo64LXvqVrM4RAPCfA-E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829916534757:android:d0a89c80576a62ef8a010c",
+        "android_client_info": {
+          "package_name": "com.stepz.attendance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWflXmui8jSfFZo64LXvqVrM4RAPCfA-E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
