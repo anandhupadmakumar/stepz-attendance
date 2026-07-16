@@ -249,7 +249,105 @@ class GeofenceReminderService extends GetxService {
 
     _isInitialized = true;
     debugPrint('GeofenceReminderService Local Notifications Initialized.');
+
+    // Schedule Mon-Sat 9:20 AM / 5:00 PM reminders
+    await scheduleWorkingDaysReminders();
+
     return this;
+  }
+
+  Future<void> scheduleWorkingDaysReminders() async {
+    try {
+      // Cancel old daily reminders first (IDs 201-206 for morning, 301-306 for evening)
+      for (int i = 1; i <= 6; i++) {
+        await _localNotifications.cancel(id: 200 + i);
+        await _localNotifications.cancel(id: 300 + i);
+      }
+
+      final androidDetails = AndroidNotificationDetails(
+        'daily_reminder_channel',
+        'Daily Reminders',
+        channelDescription: 'Channel for daily punch-in and punch-out reminders',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+      );
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: true,
+      );
+      final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+
+      final days = [
+        DateTime.monday,
+        DateTime.tuesday,
+        DateTime.wednesday,
+        DateTime.thursday,
+        DateTime.friday,
+        DateTime.saturday,
+      ];
+
+      final now = tz.TZDateTime.now(tz.local);
+
+      for (var day in days) {
+        // 1. Morning Punch In at 9:20 AM
+        var scheduledMorning = tz.TZDateTime(
+          tz.local,
+          now.year,
+          now.month,
+          now.day,
+          9, // 9 AM
+          20, // 20 minutes
+        );
+        while (scheduledMorning.weekday != day) {
+          scheduledMorning = scheduledMorning.add(const Duration(days: 1));
+        }
+        if (scheduledMorning.isBefore(now)) {
+          scheduledMorning = scheduledMorning.add(const Duration(days: 7));
+        }
+
+        await _localNotifications.zonedSchedule(
+          id: 200 + day,
+          title: 'Punch In Reminder ⏰',
+          body: 'Good morning! 9:30 AM is your check-in time. This is a reminder to check in.',
+          scheduledDate: scheduledMorning,
+          notificationDetails: details,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          payload: 'punch_in',
+        );
+
+        // 2. Evening Punch Out at 5:00 PM (17:00)
+        var scheduledEvening = tz.TZDateTime(
+          tz.local,
+          now.year,
+          now.month,
+          now.day,
+          17, // 5 PM
+          0, // 0 minutes
+        );
+        while (scheduledEvening.weekday != day) {
+          scheduledEvening = scheduledEvening.add(const Duration(days: 1));
+        }
+        if (scheduledEvening.isBefore(now)) {
+          scheduledEvening = scheduledEvening.add(const Duration(days: 7));
+        }
+
+        await _localNotifications.zonedSchedule(
+          id: 300 + day,
+          title: 'Punch Out Reminder ⏰',
+          body: '5:30 PM is your check-out time. This is a reminder for check-out.',
+          scheduledDate: scheduledEvening,
+          notificationDetails: details,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          payload: 'checkout',
+        );
+      }
+      debugPrint('Scheduled working days reminders for Mon-Sat (9:20 AM and 5:00 PM).');
+    } catch (e) {
+      debugPrint('Error scheduling working days reminders: $e');
+    }
   }
 
   // Handle notification or notification action tap
